@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bất Động Sản</title>
+    <!-- Nhúng Bootstrap 5 CSS để làm giao diện nhanh đẹp -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .property-card img {
+        height: 200px;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <!-- Thanh Menu (Navbar) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="#">🏠 Nhà Đất BĐS</a>
+        <a href="/admin" class="btn btn-outline-light btn-sm">Trang quản trị</a>
+      </div>
+    </nav>
+
+    <!-- Thân trang web -->
+    <div class="container">
+      <h2 class="mb-4 fw-bold text-center text-dark">
+        Danh Sách Bất Động Sản Đang Bán
+      </h2>
+
+      <div class="row">
+        <!-- Vòng lặp Python Django để lặp qua từng ngôi nhà trong Database -->
+        {% for house in properties %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 shadow-sm property-card">
+            <!-- Hiển thị ảnh nhà -->
+            {% if house.hinh_anh %}
+            <img
+              src="{{ house.hinh_anh.url }}"
+              class="card-img-top"
+              alt="{{ house.tieu_de }}"
+            />
+            {% else %}
+            <img
+              src="https://via.placeholder.com/300x200?text=No+Image"
+              class="card-img-top"
+              alt="No Image"
+            />
+            {% endif %}
+
+            <div class="card-body">
+              <span class="badge bg-primary mb-2"
+                >{{ house.get_loai_nha_display }}</span
+              >
+              <h5 class="card-title fw-bold text-truncate">
+                {{ house.tieu_de }}
+              </h5>
+              <p class="card-text text-danger fw-bold fs-5">
+                {{ house.gia }} VND
+              </p>
+              <p class="card-text text-muted">
+                📐 Diện tích: {{ house.dien_tich }} m²
+              </p>
+              <p class="card-text text-secondary text-truncate">
+                📍 {{ house.dia_chi }}
+              </p>
+              <hr />
+              <p class="card-text small text-muted">
+                Đăng bởi: {{ house.nguoi_dang.username }}
+              </p>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <!-- Nếu chưa có ngôi nhà nào trong database -->
+        <div class="col-12 text-center py-5">
+          <p class="fs-5 text-secondary">
+            Hiện chưa có bài đăng bất động sản nào. Bạn hãy vào trang admin để
+            thêm nhà mẫu nhé!
+          </p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <footer class="text-center py-4 text-muted mt-5 border-top bg-white">
+      © 2026 - Hệ thống Website Bất Động Sản Python Django
+    </footer>
+  </body>
+</html>
