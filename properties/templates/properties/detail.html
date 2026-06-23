@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ house.tieu_de }} - Chi tiết</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .main-img {
+        max-height: 500px;
+        object-fit: cover;
+        width: 100%;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <!-- Thanh Menu -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="/">🏠 Nhà Đất BĐS</a>
+        <a href="/" class="btn btn-outline-light btn-sm">Quay lại trang chủ</a>
+      </div>
+    </nav>
+
+    <!-- Nội dung chi tiết nhà -->
+    <div class="container my-5">
+      <div class="row bg-white p-4 rounded shadow-sm">
+        <!-- Cột bên trái: Hình ảnh -->
+        <div class="col-md-7 mb-4">
+          {% if house.hinh_anh %}
+          <img
+            src="{{ house.hinh_anh.url }}"
+            class="main-img shadow-sm"
+            alt="{{ house.tieu_de }}"
+          />
+          {% else %}
+          <img
+            src="https://via.placeholder.com/600x400?text=No+Image"
+            class="main-img shadow-sm"
+            alt="No Image"
+          />
+          {% endif %}
+        </div>
+
+        <!-- Cột bên phải: Thông tin -->
+        <div class="col-md-5">
+          <span class="badge bg-primary mb-2 fs-6"
+            >{{ house.get_loai_nha_display }}</span
+          >
+          <h1 class="fw-bold text-dark h2 mb-3">{{ house.tieu_de }}</h1>
+          <h3 class="text-danger fw-bold mb-4">{{ house.gia }} VND</h3>
+
+          <div class="p-3 bg-light rounded mb-4">
+            <p class="mb-2">
+              📐 <strong>Diện tích:</strong> {{ house.dien_tich }} m²
+            </p>
+            <p class="mb-0">📍 <strong>Địa chi:</strong> {{ house.dia_chi }}</p>
+          </div>
+
+          <div class="border-top pt-3">
+            <p class="text-muted small">
+              Người đăng: <strong>{{ house.nguoi_dang.username }}</strong>
+            </p>
+            <p class="text-muted small">
+              Ngày đăng: {{ house.ngay_dang|date:"d/m/Y" }}
+            </p>
+          </div>
+
+          <a
+            href="tel:0123456789"
+            class="btn btn-success w-100 fw-bold py-2 mt-3"
+            >📞 Liên Hệ Người Bán</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center py-4 text-muted mt-5 border-top bg-white">
+      © 2026 - Hệ thống Website Bất Động Sản Python Django
+    </footer>
+  </body>
+</html>
