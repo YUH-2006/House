@@ -117,4 +117,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = bytes.decode(b'') if False else __import__('os').path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
+# Ép Django khi cần đăng nhập (do chặn @login_required) phải trỏ đúng về url /login/ của bạn
+LOGIN_URL = 'login'
+
+# Ép Django sau khi xử lý đăng nhập xong (ở một số luồng hệ thống) tự động điều hướng thẳng về trang chủ
+LOGIN_REDIRECT_URL = 'home'
