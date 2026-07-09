@@ -21,7 +21,11 @@
         right: 30px;
         width: 65px;
         height: 65px;
-        background: linear-gradient(135deg, #007bff, #00d2ff); /* Màu xanh Gradient AI */
+        background: linear-gradient(
+          135deg,
+          #007bff,
+          #00d2ff
+        ); /* Màu xanh Gradient AI */
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -48,8 +52,14 @@
         box-sizing: border-box;
       }
       @keyframes botPulse {
-        0% { transform: scale(1); opacity: 1; }
-        100% { transform: scale(1.5); opacity: 0; }
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.5);
+          opacity: 0;
+        }
       }
 
       /* Khung Giao Diện Form Mini Pop-up */
@@ -65,8 +75,14 @@
         overflow: hidden;
       }
       @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     </style>
   </head>
@@ -157,98 +173,486 @@
             Hiện chưa có bài đăng bất động sản nào.
           </p>
         </div>
-        {% endfor %} </div>
+        {% endfor %}
+      </div>
     </div>
 
-    <div id="ai-bot-bubble" onclick="toggleBotModal()" title="Hỏi Trợ lý AI BĐS">
-        <svg class="bot-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="10" rx="2"></rect>
-            <circle cx="12" cy="5" r="2"></circle>
-            <path d="M12 7v4"></path>
-            <line x1="8" y1="16" x2="8" y2="16"></line>
-            <line x1="16" y1="16" x2="16" y2="16"></line>
-        </svg>
-        <div class="pulse-ring"></div>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* Nút bong bóng nổi ở góc dưới bên phải */
+      #ai-bot-bubble {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        transition: transform 0.2s;
+      }
+      #ai-bot-bubble:hover {
+        transform: scale(1.1);
+      }
+      /* Khung Chat Modal (Mặc định ẩn) */
+      #ai-bot-modal {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 360px;
+        display: none; /* Ẩn lúc mới vào web */
+        z-index: 9999;
+        border-radius: 12px;
+      }
+    </style>
+
+    <div
+      id="ai-bot-bubble"
+      onclick="toggleBotModal()"
+      title="Hỏi Trợ lý AI BĐS"
+    >
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+        <circle cx="12" cy="5" r="2"></circle>
+        <path d="M12 7v4"></path>
+        <line x1="8" y1="16" x2="8" y2="16"></line>
+        <line x1="16" y1="16" x2="16" y2="16"></line>
+      </svg>
     </div>
 
-    <div id="ai-bot-modal" class="card shadow border-0">
-        <div class="card-header bg-dark text-white p-0">
-            <div class="d-flex justify-content-between align-items-center px-3 pt-2">
-                <h6 class="m-0 fw-bold">🤖 Trợ Lý AI Bất Động Sản</h6>
-                <button type="button" class="btn-close btn-close-white btn-sm" onclick="toggleBotModal()"></button>
+    <div id="ai-bot-modal" class="card shadow-lg border-0">
+      <div class="card-header bg-dark text-white p-0 rounded-top">
+        <div
+          class="d-flex justify-content-between align-items-center px-3 pt-3 pb-2"
+        >
+          <h6 class="m-0 fw-bold">🤖 Trợ Lý AI Bất Động Sản</h6>
+          <button
+            type="button"
+            class="btn-close btn-close-white btn-sm"
+            onclick="toggleBotModal()"
+          ></button>
+        </div>
+        <ul class="nav nav-tabs border-0 mt-1 small" id="botTab" role="tablist">
+          <li class="nav-item flex-fill text-center" role="presentation">
+            <button
+              class="nav-link text-white active border-0 w-100 fw-bold py-2"
+              id="predict-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#predict-panel"
+              type="button"
+            >
+              🔮 Định Giá AI
+            </button>
+          </li>
+          <li class="nav-item flex-fill text-center" role="presentation">
+            <button
+              class="nav-link text-white border-0 w-100 fw-bold py-2"
+              id="chat-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#chat-panel"
+              type="button"
+            >
+              💬 Chat Tư Vấn
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-body tab-content p-3" id="botTabContent">
+        <div
+          class="tab-pane fade show active"
+          id="predict-panel"
+          role="tabpanel"
+        >
+          <form action="/predict/" method="POST">
+            {% csrf_token %}
+
+            <div class="mb-2">
+              <input
+                type="number"
+                name="dien_tich"
+                class="form-control"
+                placeholder="Diện tích (m²)"
+                required
+              />
             </div>
-            <ul class="nav nav-tabs border-0 mt-2 small" id="botTab" role="tablist">
-                <li class="nav-item flex-fill text-center" role="presentation">
-                    <button class="nav-link text-white active border-0 w-100 fw-bold py-2" id="predict-tab" data-bs-toggle="tab" data-bs-target="#predict-panel" type="button">🔮 Định Giá AI</button>
-                </li>
-                <li class="nav-item flex-fill text-center" role="presentation">
-                    <button class="nav-link text-white border-0 w-100 fw-bold py-2" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat-panel" type="button">💬 Chat Tư Vấn</button>
-                </li>
-            </ul>
+            <div class="row mb-2">
+              <div class="col">
+                <input
+                  type="number"
+                  name="so_phong_ngu"
+                  class="form-control"
+                  placeholder="Phòng ngủ"
+                  required
+                />
+              </div>
+              <div class="col">
+                <input
+                  type="number"
+                  name="so_phong_tam"
+                  class="form-control"
+                  placeholder="Phòng tắm"
+                  required
+                />
+              </div>
+            </div>
+            <div class="mb-2">
+              <input
+                type="text"
+                name="khu_vuc"
+                class="form-control"
+                placeholder="Khu vực (Ví dụ: Quận 7)"
+                required
+              />
+            </div>
+            <div class="mb-2">
+              <select name="loai_nha" class="form-select">
+                <option value="Nhà phố">Nhà phố</option>
+                <option value="Chung cư">Chung cư</option>
+                <option value="Biệt thự">Biệt thự</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <select name="vi_tri" class="form-select">
+                <option value="Mặt tiền">Mặt tiền</option>
+                <option value="Trong ngõ">Trong hẻm / ngõ</option>
+              </select>
+            </div>
+            <input type="hidden" name="nam_xay_dung" value="2026" />
+
+            <button type="submit" class="btn btn-primary w-100 fw-bold">
+              Tính Toán Giá Bán
+            </button>
+          </form>
         </div>
 
-        <div class="card-body p-3 bg-white tab-content" id="botTabContent" style="max-height: 420px; overflow-y: auto;">
-            
-            <div class="tab-pane fade show active" id="predict-panel" role="tabpanel">
-                <form method="POST" action="{% url 'predict' %}">
-                    {% csrf_token %}
-                    <div class="row g-2 mb-2">
-                        <div class="col-6">
-                            <label class="form-label small fw-bold mb-1">Diện tích (m²)</label>
-                            <input type="number" name="dien_tich" class="form-control form-control-sm" required placeholder="Ví dụ: 85">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small fw-bold mb-1">Loại nhà</label>
-                            <select name="loai_nha" class="form-select form-select-sm">
-                                <option value="Nhà phố">Nhà phố</option>
-                                <option value="Chung cư">Chung cư</option>
-                                <option value="Biệt thự">Biệt thự</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row g-2 mb-2">
-                        <div class="col-6">
-                            <label class="form-label small fw-bold mb-1">Số phòng ngủ</label>
-                            <input type="number" name="so_phong_ngu" class="form-control form-control-sm" required value="2">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small fw-bold mb-1">Số phòng tắm</label>
-                            <input type="number" name="so_phong_tam" class="form-control form-control-sm" required value="1">
-                        </div>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label small fw-bold mb-1">Khu vực / Quận</label>
-                        <input type="text" name="khu_vuc" class="form-control form-control-sm" required placeholder="Ví dụ: Quận 7">
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label small fw-bold mb-1">Vị trí</label>
-                            <select name="vi_tri" class="form-select form-select-sm">
-                                <option value="Mặt tiền">Mặt tiền</option>
-                                <option value="Hẻm">Trong hẻm</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small fw-bold mb-1">Năm xây dựng</label>
-                            <input type="number" name="nam_xay_dung" class="form-control form-control-sm" value="2024">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold py-2">Gửi AI Phân Tích</button>
-                </form>
+        <div class="tab-pane fade" id="chat-panel" role="tabpanel">
+          <div
+            id="chat-history"
+            class="bg-light p-3 mb-3 border rounded"
+            style="height: 250px; overflow-y: auto"
+          >
+            <div class="text-start mb-2">
+              <span
+                class="bg-white border p-2 rounded d-inline-block text-dark shadow-sm"
+              >
+                🤖 Chào bạn, tôi là chuyên gia BĐS. Tôi có thể giúp gì cho bạn?
+              </span>
             </div>
-
-            <div class="tab-pane fade" id="chat-panel" role="tabpanel">
-                <div class="chat-messages border rounded p-2 mb-2 bg-light" style="height: 230px; overflow-y: auto; font-size: 13px;">
-                    <div class="text-secondary mb-2">🤖 <b>AI:</b> Xin chào! Tôi có thể tư vấn gì cho bạn về định giá, phân khúc nhà hoặc tìm kiếm bất động sản phù hợp ngân sách?</div>
-                </div>
-                <div class="input-group">
-                    <input type="text" id="chat-user-input" class="form-control form-control-sm" placeholder="Nhập câu hỏi...">
-                    <button class="btn btn-dark btn-sm" type="button" onclick="sendMessage()">Gửi</button>
-                </div>
-            </div>
-
+          </div>
+          <div class="input-group">
+            <input
+              type="text"
+              id="chat-input"
+              class="form-control"
+              placeholder="Hỏi AI về pháp lý, giá cả..."
+            />
+            <button class="btn btn-primary" onclick="guiTinNhan()">Gửi</button>
+          </div>
         </div>
+      </div>
     </div>
+
+    <style>
+      /* Ép bong bóng nổi góc dưới phải */
+      #ai-bot-bubble {
+        position: fixed !important;
+        bottom: 30px !important;
+        right: 30px !important;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        z-index: 99999 !important; /* Luôn nổi trên cùng */
+        transition: transform 0.2s;
+      }
+      #ai-bot-bubble:hover {
+        transform: scale(1.1);
+      }
+
+      /* Ép khung chat/form nổi ngay trên bong bóng */
+      #ai-bot-modal {
+        position: fixed !important;
+        bottom: 100px !important;
+        right: 30px !important;
+        width: 380px !important; /* Giới hạn độ rộng để không bị tràn */
+        max-width: 90vw;
+        display: none; /* Ẩn đi khi mới vào web */
+        z-index: 99999 !important;
+        border-radius: 12px;
+        background-color: white; /* Nền trắng */
+      }
+    </style>
+
+    <div id="ai-bot-bubble" onclick="toggleBotModal()" title="Hỏi Trợ lý AI">
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+        <circle cx="12" cy="5" r="2"></circle>
+        <path d="M12 7v4"></path>
+        <line x1="8" y1="16" x2="8" y2="16"></line>
+        <line x1="16" y1="16" x2="16" y2="16"></line>
+      </svg>
+    </div>
+
+    <div id="ai-bot-modal" class="card shadow-lg border-0">
+      <div class="card-header bg-dark text-white p-0 rounded-top">
+        <div
+          class="d-flex justify-content-between align-items-center px-3 pt-3 pb-2"
+        >
+          <h6 class="m-0 fw-bold">🤖 Trợ Lý AI Bất Động Sản</h6>
+          <button
+            type="button"
+            class="btn-close btn-close-white btn-sm"
+            onclick="toggleBotModal()"
+          ></button>
+        </div>
+        <ul class="nav nav-tabs border-0 mt-1 small" id="botTab" role="tablist">
+          <li class="nav-item flex-fill text-center" role="presentation">
+            <button
+              class="nav-link text-white active border-0 w-100 fw-bold py-2"
+              id="predict-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#predict-panel"
+              type="button"
+            >
+              🔮 Định Giá AI
+            </button>
+          </li>
+          <li class="nav-item flex-fill text-center" role="presentation">
+            <button
+              class="nav-link text-white border-0 w-100 fw-bold py-2"
+              id="chat-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#chat-panel"
+              type="button"
+            >
+              💬 Chat Tư Vấn
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-body tab-content p-3" id="botTabContent">
+        <div
+          class="tab-pane fade show active"
+          id="predict-panel"
+          role="tabpanel"
+        >
+          <form action="/predict/" method="POST">
+            {% csrf_token %}
+            <div class="mb-2">
+              <label class="form-label small fw-bold mb-1"
+                >Diện tích (m²)</label
+              >
+              <input
+                type="number"
+                name="dien_tich"
+                class="form-control"
+                placeholder="Ví dụ: 85"
+                required
+              />
+            </div>
+            <div class="row mb-2">
+              <div class="col">
+                <label class="form-label small fw-bold mb-1"
+                  >Số phòng ngủ</label
+                >
+                <input
+                  type="number"
+                  name="so_phong_ngu"
+                  class="form-control"
+                  placeholder="Ví dụ: 2"
+                  required
+                />
+              </div>
+              <div class="col">
+                <label class="form-label small fw-bold mb-1"
+                  >Số phòng tắm</label
+                >
+                <input
+                  type="number"
+                  name="so_phong_tam"
+                  class="form-control"
+                  placeholder="Ví dụ: 1"
+                  required
+                />
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small fw-bold mb-1"
+                >Khu vực / Quận</label
+              >
+              <input
+                type="text"
+                name="khu_vuc"
+                class="form-control"
+                placeholder="Ví dụ: Quận 7"
+                required
+              />
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <label class="form-label small fw-bold mb-1">Loại nhà</label>
+                <select name="loai_nha" class="form-select">
+                  <option value="Nhà phố">Nhà phố</option>
+                  <option value="Chung cư">Chung cư</option>
+                  <option value="Biệt thự">Biệt thự</option>
+                </select>
+              </div>
+              <div class="col">
+                <label class="form-label small fw-bold mb-1">Vị trí</label>
+                <select name="vi_tri" class="form-select">
+                  <option value="Mặt tiền">Mặt tiền</option>
+                  <option value="Trong ngõ">Trong hẻm / ngõ</option>
+                </select>
+              </div>
+            </div>
+            <input type="hidden" name="nam_xay_dung" value="2024" />
+            <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+              Gửi AI Phân Tích
+            </button>
+          </form>
+        </div>
+
+        <div class="tab-pane fade" id="chat-panel" role="tabpanel">
+          <div
+            id="chat-history"
+            class="bg-light p-3 mb-3 border rounded"
+            style="height: 300px; overflow-y: auto"
+          >
+            <div class="text-start mb-2">
+              <span
+                class="bg-white border p-2 rounded d-inline-block text-dark shadow-sm small"
+              >
+                🤖 Chào bạn, tôi là chuyên gia BĐS. Tôi có thể giúp gì cho bạn?
+              </span>
+            </div>
+          </div>
+          <div class="input-group">
+            <input
+              type="text"
+              id="chat-input"
+              class="form-control form-control-sm"
+              placeholder="Hỏi AI về phong thủy, giá nhà..."
+            />
+            <button class="btn btn-primary btn-sm" onclick="guiTinNhan()">
+              Gửi AI
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function toggleBotModal() {
+        var modal = document.getElementById("ai-bot-modal");
+        // Nếu đang ẩn thì hiện, đang hiện thì ẩn
+        if (modal.style.display === "none" || modal.style.display === "") {
+          modal.style.display = "block";
+        } else {
+          modal.style.display = "none";
+        }
+      }
+
+      // Đổi thành hàm async để đợi AI suy nghĩ
+      async function guiTinNhan() {
+        var input = document.getElementById("chat-input");
+        var message = input.value.trim();
+        var history = document.getElementById("chat-history");
+
+        if (message !== "") {
+          // 1. In tin nhắn của người dùng lên màn hình (Màu xanh)
+          history.innerHTML += `
+            <div class="text-end mb-2">
+                <span class="bg-primary text-white p-2 rounded d-inline-block shadow-sm small">
+                    ${message}
+                </span>
+            </div>`;
+          input.value = "";
+          history.scrollTop = history.scrollHeight;
+
+          // 2. In tạm dòng chữ "AI đang suy nghĩ..." (Màu xám)
+          let typingId = "typing-" + Date.now();
+          history.innerHTML += `
+            <div class="text-start mb-2" id="${typingId}">
+                <span class="bg-white border p-2 rounded d-inline-block text-muted shadow-sm small">
+                    ⏳ AI đang suy nghĩ...
+                </span>
+            </div>`;
+          history.scrollTop = history.scrollHeight;
+
+          // 3. Gửi câu hỏi ngầm xuống Django Backend
+          try {
+            let formData = new FormData();
+            formData.append("message", message);
+
+            let response = await fetch("/chat/", {
+              method: "POST",
+              body: formData,
+            });
+
+            let data = await response.json();
+
+            // 4. Xóa dòng "đang suy nghĩ" và in câu trả lời thật của Gemini
+            document.getElementById(typingId).remove();
+
+            // Xử lý xuống dòng cho đẹp (thay \n thành thẻ <br>)
+            let formattedReply = data.reply.replace(/\n/g, "<br>");
+
+            history.innerHTML += `
+                <div class="text-start mb-2">
+                    <span class="bg-white border p-2 rounded d-inline-block text-dark shadow-sm small">
+                        🤖 ${formattedReply}
+                    </span>
+                </div>`;
+            history.scrollTop = history.scrollHeight;
+          } catch (error) {
+            // Báo lỗi nếu rớt mạng hoặc Server chết
+            document.getElementById(typingId).remove();
+            history.innerHTML += `
+                <div class="text-start mb-2">
+                    <span class="bg-danger text-white p-2 rounded d-inline-block shadow-sm small">
+                        ❌ Mất kết nối đến Trợ lý AI. Vui lòng thử lại!
+                    </span>
+                </div>`;
+          }
+        }
+      }
+    </script>
 
     <footer class="text-center py-4 text-muted mt-5 border-top bg-white">
       © 2026 - Hệ thống Website Bất Động Sản Python Django
@@ -257,49 +661,49 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bundle.min.js"></script>
 
     <script>
-        function toggleBotModal() {
-            var modal = document.getElementById('ai-bot-modal');
-            if (modal.style.display === 'none' || modal.style.display === '') {
-                modal.style.display = 'block';
-                // Tự động đẩy thanh cuộn xuống tin nhắn mới nhất khi mở bot
-                var msgBox = document.querySelector('.chat-messages');
-                if (msgBox) {
-                    msgBox.scrollTop = msgBox.scrollHeight;
-                }
-            } else {
-                modal.style.display = 'none';
-            }
+      function toggleBotModal() {
+        var modal = document.getElementById("ai-bot-modal");
+        if (modal.style.display === "none" || modal.style.display === "") {
+          modal.style.display = "block";
+          // Tự động đẩy thanh cuộn xuống tin nhắn mới nhất khi mở bot
+          var msgBox = document.querySelector(".chat-messages");
+          if (msgBox) {
+            msgBox.scrollTop = msgBox.scrollHeight;
+          }
+        } else {
+          modal.style.display = "none";
         }
+      }
 
-        function sendMessage() {
-            var input = document.getElementById('chat-user-input');
-            var msgBox = document.querySelector('.chat-messages');
-            if(input.value.trim() !== "") {
-                // Đưa câu hỏi của bạn lên khung chat
-                msgBox.innerHTML += `<div class="text-end mb-2"><b>Bạn:</b> ${input.value}</div>`;
-                
-                // Trợ lý phản hồi giả lập
-                setTimeout(() => {
-                    msgBox.innerHTML += `<div class="text-start text-primary mb-2">🤖 <b>AI:</b> Đang xử lý yêu cầu "${input.value}" của bạn để gợi ý nhà và phân khúc phù hợp...</div>`;
-                    msgBox.scrollTop = msgBox.scrollHeight;
-                }, 800);
-                
-                input.value = "";
-            }
+      function sendMessage() {
+        var input = document.getElementById("chat-user-input");
+        var msgBox = document.querySelector(".chat-messages");
+        if (input.value.trim() !== "") {
+          // Đưa câu hỏi của bạn lên khung chat
+          msgBox.innerHTML += `<div class="text-end mb-2"><b>Bạn:</b> ${input.value}</div>`;
+
+          // Trợ lý phản hồi giả lập
+          setTimeout(() => {
+            msgBox.innerHTML += `<div class="text-start text-primary mb-2">🤖 <b>AI:</b> Đang xử lý yêu cầu "${input.value}" của bạn để gợi ý nhà và phân khúc phù hợp...</div>`;
+            msgBox.scrollTop = msgBox.scrollHeight;
+          }, 800);
+
+          input.value = "";
         }
+      }
 
-        // Tự động cuộn xuống đáy khi chuyển đổi trực tiếp giữa các tab chức năng
-        document.addEventListener('DOMContentLoaded', function() {
-            var chatTabButton = document.getElementById('chat-tab');
-            if (chatTabButton) {
-                chatTabButton.addEventListener('shown.bs.tab', function () {
-                    var msgBox = document.querySelector('.chat-messages');
-                    if (msgBox) {
-                        msgBox.scrollTop = msgBox.scrollHeight;
-                    }
-                });
+      // Tự động cuộn xuống đáy khi chuyển đổi trực tiếp giữa các tab chức năng
+      document.addEventListener("DOMContentLoaded", function () {
+        var chatTabButton = document.getElementById("chat-tab");
+        if (chatTabButton) {
+          chatTabButton.addEventListener("shown.bs.tab", function () {
+            var msgBox = document.querySelector(".chat-messages");
+            if (msgBox) {
+              msgBox.scrollTop = msgBox.scrollHeight;
             }
-        });
+          });
+        }
+      });
     </script>
   </body>
 </html>
