@@ -1,5 +1,13 @@
 import os
 import re
+import sys
+import io
+
+# Set UTF-8 encoding for stdout
+if sys.version_info >= (3, 7):
+    sys.stdout.reconfigure(encoding='utf-8')
+else:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 import joblib
 import numpy as np
@@ -81,6 +89,20 @@ def extract_features_from_desc(row):
     return pd.Series([dien_tich, phong_ngu, so_phong_tam, gia_vnd])
 
 
+def standardize_loai_nha(loai_nha):
+    """Chuẩn hóa giá trị loai_nha để khớp với form"""
+    loai_nha = str(loai_nha).lower().strip()
+    if any(keyword in loai_nha for keyword in ['nhà phố', 'nhà']):
+        return 'Nhà phố'
+    elif any(keyword in loai_nha for keyword in ['chung cư', 'căn hộ', 'phòng trọ']):
+        return 'Chung cư'
+    elif any(keyword in loai_nha for keyword in ['biệt thự', 'nhà liền kề']):
+        return 'Biệt thự'
+    elif any(keyword in loai_nha for keyword in ['đất']):
+        return 'Đất nền'
+    else:
+        return 'Nhà phố'  # Mặc định
+
 def load_external_listing_csv(path, source_name="nhatot_data.csv"):
     if not os.path.exists(path):
         return pd.DataFrame()
@@ -121,7 +143,7 @@ def load_external_listing_csv(path, source_name="nhatot_data.csv"):
     # nếu chưa có giá trị phòng tắm, đảm bảo tối thiểu 1
     df["so_phong_tam"] = df.get("so_phong_tam", pd.Series([1] * len(df)))
     df["khu_vực"] = "Hồ Chí Minh"
-    df["loai_nha"] = "Nhà phố"
+    df["loai_nha"] = "Nhà phố"  # Will standardize later
     df["vi_tri"] = "Mặt tiền"
     df["nam_xay_dung"] = 2025
 
@@ -137,11 +159,11 @@ def build_training_frame(files=None):
     files_to_use = files or csv_files
     list_of_dfs = []
 
-    print("⏳ 1. Bắt đầu đọc và chuẩn hóa dữ liệu từ nhiều nguồn...")
+    print('[1] Bắt đầu đọc và chuẩn hóa dữ liệu từ nhiều nguồn...')
     for filename in files_to_use:
-        print(f"📦 Đang xử lý file: {filename} ...")
+        print(f'Đang xử lý file: {filename} ...')
         if not os.path.exists(filename):
-            print(f"⚠️ Không tìm thấy file '{filename}', bỏ qua.")
+            print(f'Không tìm thấy file \'{filename}\', bỏ qua.')
             continue
 
         if filename.lower() == "nhatot_data.csv":
@@ -173,7 +195,7 @@ def build_training_frame(files=None):
             else:
                 df_clean["khu_vực"] = "Hà Nội"
 
-            df_clean["loai_nha"] = "Chung cư/Phòng trọ"
+            df_clean["loai_nha"] = "Chung cư"
             df_clean["vi_tri"] = "Trong ngõ"
             df_clean["nam_xay_dung"] = 2026
             df_clean["gia_ban"] = pd.to_numeric(raw_df["price"], errors="coerce") * 300
@@ -200,7 +222,9 @@ def build_training_frame(files=None):
         raise ValueError("Không có dữ liệu hợp lệ để huấn luyện")
 
     combined_df = pd.concat(list_of_dfs, ignore_index=True)
-    print(f"\n⚡ Đã gộp dữ liệu thành công! Tổng số lượng tin đăng thu thập được: {len(combined_df)} dòng.")
+    # Chuẩn hóa toàn bộ loai_nha sau khi gộp
+    combined_df["loai_nha"] = combined_df["loai_nha"].apply(standardize_loai_nha)
+    print(f"\nĐã gộp dữ liệu thành công! Tổng số lượng tin đăng thu thập được: {len(combined_df)} dòng.")
     sample_size = min(len(combined_df), 60000)
     return combined_df.sample(n=sample_size, random_state=42)
 
@@ -211,7 +235,7 @@ def train_model(files=None, output_path="bot_du_doan_nang_cap.pkl"):
     X = df_final[["dien_tich", "so_phong_ngu", "so_phong_tam", "khu_vực", "loai_nha", "vi_tri", "nam_xay_dung"]]
     y = df_final["gia_ban"]
 
-    print(f"🤖 2. Thiết lập bộ tiền xử lý ma trận cho {len(df_final)} mẫu đa nguồn...")
+    print(f'[2] Thiết lập bộ tiền xử lý ma trận cho {len(df_final)} mẫu đa nguồn...')
     numeric_features = ["dien_tich", "so_phong_ngu", "so_phong_tam", "nam_xay_dung"]
     categorical_features = ["khu_vực", "loai_nha", "vi_tri"]
 
@@ -229,15 +253,15 @@ def train_model(files=None, output_path="bot_du_doan_nang_cap.pkl"):
         ]
     )
 
-    print("🔥 3. Bot AI đang thực hiện học tập quy luật thị trường gộp (Bán & Thuê) với cấu hình mạnh hơn...")
+    print('[3] Bot AI đang thực hiện học tập quy luật thị trường gộp (Bán & Thuê) với cấu hình mạnh hơn...')
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     bot_model.fit(X_train, y_train)
     pred_test = bot_model.predict(X_test)
     mae = mean_absolute_error(y_test, pred_test)
-    print(f"📊 MAE trên tập test: {mae:.2f} triệu VND")
+    print(f'[4] MAE trên tập test: {mae:.2f} triệu VND')
 
     joblib.dump(bot_model, output_path)
-    print(f"\n✅ THÀNH CÔNG RỰC RỠ: Bộ não AI đã được nâng cấp và lưu lại tại {output_path}!")
+    print(f'\nTHÀNH CÔNG: Bộ não AI đã được nâng cấp và lưu lại tại {output_path}!')
     return bot_model
 
 

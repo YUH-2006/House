@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Định Giá Nhà Đất - AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/">🏠 Nhà Đất BĐS</a>
+    </div>
+  </nav>
+
+  <div class="container mb-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow-lg">
+          <div class="card-header bg-primary text-white">
+            <h3 class="m-0 fw-bold">🔮 Định Giá Nhà Đất AI</h3>
+          </div>
+          <div class="card-body">
+            <form action="/predict/" method="POST">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label fw-bold">Diện tích (m²)</label>
+                <input type="number" name="dien_tich" class="form-control" placeholder="Ví dụ: 85" required />
+              </div>
+              <div class="row mb-3">
+                <div class="col">
+                  <label class="form-label fw-bold">Số phòng ngủ</label>
+                  <input type="number" name="so_phong_ngu" class="form-control" placeholder="Ví dụ: 2" required />
+                </div>
+                <div class="col">
+                  <label class="form-label fw-bold">Số phòng tắm</label>
+                  <input type="number" name="so_phong_tam" class="form-control" placeholder="Ví dụ: 1" required />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">Khu vực / Quận</label>
+                <input type="text" name="khu_vuc" class="form-control" placeholder="Ví dụ: Quận 7" required />
+              </div>
+              <div class="row mb-3">
+                <div class="col">
+                  <label class="form-label fw-bold">Loại nhà</label>
+                  <select name="loai_nha" class="form-select">
+                    <option value="Nhà phố">Nhà phố</option>
+                    <option value="Chung cư">Chung cư</option>
+                    <option value="Biệt thự">Biệt thự</option>
+                    <option value="Đất nền">Đất nền</option>
+                  </select>
+                </div>
+                <div class="col">
+                  <label class="form-label fw-bold">Vị trí</label>
+                  <select name="vi_tri" class="form-select">
+                    <option value="Mặt tiền">Mặt tiền</option>
+                    <option value="Trong ngõ">Trong hẻm / ngõ</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mb-4">
+                <label class="form-label fw-bold">Năm xây dựng</label>
+                <input type="number" name="nam_xay_dung" class="form-control" placeholder="Ví dụ: 2020" min="1990"
+                  max="2026" value="2024" required />
+              </div>
+              <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+                Gửi AI Phân Tích Giá
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

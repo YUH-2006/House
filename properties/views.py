@@ -142,10 +142,11 @@ def get_dataset_reply(user_message):
     text = user_message.lower()
     dien_tich = None
     so_phong_ngu = 2
+    so_phong_tam = 1
     khu_vuc = 'Hà Nội'
     loai_nha = 'Nhà phố'
     vi_tri = 'Mặt tiền'
-    nam_xay_dung = 2026
+    nam_xay_dung = 2024
 
     # Giải thích: cố gắng trích xuất vài thông số từ câu hỏi
     import re
@@ -156,6 +157,10 @@ def get_dataset_reply(user_message):
     pn_match = re.search(r'(\d+)\s*(phòng ngủ|pn|phòng)', text)
     if pn_match:
         so_phong_ngu = min(int(pn_match.group(1)), 8)
+    
+    pt_match = re.search(r'(\d+)\s*(phòng tắm|pt|toilet|wc)', text)
+    if pt_match:
+        so_phong_tam = min(int(pt_match.group(1)), 6)
 
     if 'hcm' in text or 'hồ chí minh' in text or 'sài gòn' in text:
         khu_vuc = 'Hồ Chí Minh'
@@ -164,15 +169,30 @@ def get_dataset_reply(user_message):
     elif 'đà nẵng' in text:
         khu_vuc = 'Đà Nẵng'
 
-    if 'chung cư' in text or 'căn hộ' in text:
-        loai_nha = 'Chung cư/Phòng trọ'
-    elif 'nhà phố' in text or 'nhà' in text:
+    # Chuẩn hóa loai_nha giống như train_bot.py
+    if any(keyword in text for keyword in ['chung cư', 'căn hộ', 'phòng trọ']):
+        loai_nha = 'Chung cư'
+    elif any(keyword in text for keyword in ['biệt thự', 'nhà liền kề']):
+        loai_nha = 'Biệt thự'
+    elif any(keyword in text for keyword in ['đất']):
+        loai_nha = 'Đất nền'
+    elif any(keyword in text for keyword in ['nhà phố', 'nhà']):
         loai_nha = 'Nhà phố'
 
     if 'mặt tiền' in text:
         vi_tri = 'Mặt tiền'
     elif 'ngõ' in text or 'hẻm' in text:
         vi_tri = 'Trong ngõ'
+    
+    # Trích xuất năm xây dựng
+    year_match = re.search(r'(năm\s*xây\s*dựng|xây\s*dựng|năm)\s*(\d{4})', text)
+    if year_match:
+        nam_xay_dung = int(year_match.group(2))
+    else:
+        # Nếu không có, thử tìm số 4 chữ số trong khoảng 1990-2026
+        year_match2 = re.search(r'(\b(199\d|20[012]\d)\b)', text)
+        if year_match2:
+            nam_xay_dung = int(year_match2.group(1))
 
     if dien_tich is None:
         return None
@@ -180,7 +200,7 @@ def get_dataset_reply(user_message):
     df = pd.DataFrame([{
         'dien_tich': dien_tich,
         'so_phong_ngu': so_phong_ngu,
-        'so_phong_tam': 1,
+        'so_phong_tam': so_phong_tam,
         'khu_vực': khu_vuc,
         'loai_nha': loai_nha,
         'vi_tri': vi_tri,
